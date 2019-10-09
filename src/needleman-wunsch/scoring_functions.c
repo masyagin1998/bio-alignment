@@ -1,5 +1,8 @@
 #include "needleman-wunsch.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #define BLOSUM62_SIZE 24
 
 const int BLOSUM62[BLOSUM62_SIZE][BLOSUM62_SIZE] =
@@ -113,7 +116,8 @@ static int idx_dna_full(char a)
     case 'C':
         return 3;
     default:
-        return -1;
+        fprintf(stderr, "unknown character for DNA_FULL: %c", a);
+        exit(1);
     }
 }
 
