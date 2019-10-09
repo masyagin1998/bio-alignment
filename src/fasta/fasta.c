@@ -111,7 +111,8 @@ enum FASTA_CODES fasta_file_read(const char*fname, struct FASTA_DATA**fdata, uns
                 comment_len = 0;
                 data_len = 0;                
             } else {
-                printf("%d %c\n", frs, buf[i]);
+                r = FASTA_BAD_DATA;
+                goto err1;
             }
         }
     }
@@ -132,7 +133,17 @@ enum FASTA_CODES fasta_file_read(const char*fname, struct FASTA_DATA**fdata, uns
 
     return FASTA_OK;
 
+ err1:
+    {
+        unsigned i;
+        for (i = 0; i < (*n); i++) {
+            fasta_data_clear((*fdata) + i);
+        }
+        free((*fdata));
+    }
  err0:
+    (*fdata) = NULL;
+    (*n) = 0;
     return r;
 }
 

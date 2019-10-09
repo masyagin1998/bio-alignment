@@ -7,21 +7,21 @@
 #define UP   2
 #define DIAG 3
 
-static inline int mat_get(const int*mat, unsigned c_len, unsigned i, unsigned j)
+static __inline__ int mat_get(const int*mat, unsigned c_len, unsigned i, unsigned j)
 {
     return mat[i * c_len + j];
 }
 
-static inline void mat_set(int*mat, unsigned c_len, unsigned i, unsigned j, int val)
+static __inline__ void mat_set(int*mat, unsigned c_len, unsigned i, unsigned j, int val)
 {
     mat[i * c_len + j] = val;
 }
 
-static inline int max(int a, int b) {
+static __inline__ int max(int a, int b) {
     return a > b ? a : b;
 }
 
-#define NEEDLEMAN_WUNSCH_DEBUG
+/* #define NEEDLEMAN_WUNSCH_DEBUG */
 
 #ifdef NEEDLEMAN_WUNSCH_DEBUG
 
@@ -40,26 +40,15 @@ void mat_debug(const int*mat, unsigned r_len, unsigned c_len)
 }
 #endif  /* NEEDLEMAN_WUNSCH_DEBUG */
 
-enum NEEDLEMAN_WUNSCH_CODES needleman_wunsch_run(const char*a, unsigned a_len, const char*b, unsigned b_len,
-                                                 char**a_aligned, char**b_aligned, unsigned*aligned_len,
-                                                 int*score, int (*scoring_function)(char a, char b), int G)
+void needleman_wunsch_run(const char*a, unsigned a_len, const char*b, unsigned b_len,
+                          char**a_aligned, char**b_aligned, unsigned*aligned_len,
+                          int*score, int (*scoring_function)(char a, char b), int G)
 {
-    enum NEEDLEMAN_WUNSCH_CODES r;
-
     unsigned i, j;
     int*D,*PTR;
     
     D = (int*) calloc((a_len + 1) * (b_len + 1), sizeof(int));
-    if (D == NULL) {
-        r = NEEDLEMAN_WUNSCH_BAD_ALLOC;
-        goto err0;
-    }
-
     PTR = (int*) calloc((a_len + 1) * (b_len + 1), sizeof(int));
-    if (PTR == NULL) {
-        r = NEEDLEMAN_WUNSCH_BAD_ALLOC;
-        goto err1;
-    }
 
     /* initialization of matrix. */
     mat_set(D, b_len + 1, 0, 0, 0);
@@ -107,7 +96,6 @@ enum NEEDLEMAN_WUNSCH_CODES needleman_wunsch_run(const char*a, unsigned a_len, c
     j = b_len;
 
     while ((i != 0) && (j != 0)) {
-        printf("%d\n", mat_get(PTR, b_len + 1, i, j));
         if (mat_get(PTR, b_len + 1, i, j) == DIAG) {
             (*a_aligned)[(*aligned_len)] = a[i - 1];
             (*b_aligned)[(*aligned_len)] = b[j - 1];
@@ -142,15 +130,8 @@ enum NEEDLEMAN_WUNSCH_CODES needleman_wunsch_run(const char*a, unsigned a_len, c
     printf("a_aligned:\n%.*s\n", (*aligned_len), (*a_aligned));
     printf("b_aligned:\n%.*s\n", (*aligned_len), (*b_aligned));
     printf("score: %d\n", (*score));
-#endif    
+#endif
 
     free(PTR);
     free(D);
-
-    return NEEDLEMAN_WUNSCH_Ok;
-
- err1:
-    free(D);
- err0:
-    return r;
 }
