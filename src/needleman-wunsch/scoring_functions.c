@@ -125,8 +125,8 @@ int scoring_function_nucleotides_dna_full(char a, char b)
 int scoring_function_default(char a, char b)
 {
     if (a == b) {
-        return 2;
+        return 1;
     } else {
-        return -2;
+        return -1;
     }
 }
