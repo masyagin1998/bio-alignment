@@ -152,6 +152,7 @@ enum FASTA_CODES fasta_file_write(const char*fname, const struct FASTA_DATA*fdat
     enum FASTA_CODES r;
 
     unsigned i, j;
+    int f_need_close = 0;
     
     FILE*f;
 
@@ -165,6 +166,7 @@ enum FASTA_CODES fasta_file_write(const char*fname, const struct FASTA_DATA*fdat
             r = FASTA_BAD_FILE;
             goto err0;
         }
+        f_need_close = 1;
     }
 
     for (i = 0; i < n; i++) {
@@ -179,7 +181,9 @@ enum FASTA_CODES fasta_file_write(const char*fname, const struct FASTA_DATA*fdat
         fprintf(f, "\n");
     }
 
-    fclose(f);
+    if (f_need_close) {
+        fclose(f);
+    }
 
     return FASTA_OK;
 

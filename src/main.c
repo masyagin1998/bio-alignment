@@ -192,13 +192,23 @@ int main(int argc, char**argv)
 
     free(a_aligned);
     free(b_aligned);
-
+    
     fasta_file_write(out, fdata_out, 2, 80);
 
     for (i = 0; i < 2; i++) {
         fasta_data_clear(fdata_out + i);
     }
     free(fdata_out);
+
+    if (strcmp(out, "stdout") == 0) {
+        fprintf(stdout, "\nScore: %d\n", score);
+    } else if (strcmp(out, "stderr") == 0) {
+        fprintf(stderr, "\nScore: %d\n", score);
+    } else {
+        FILE*f = fopen(out, "a");
+        fprintf(f, "\nScore: %d\n", score);
+        fclose(f);
+    }
 
     return 0;
 }
