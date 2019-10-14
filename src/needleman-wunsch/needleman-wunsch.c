@@ -9,7 +9,7 @@
 #define UP   2
 #define DIAG 3
 
-/* #define NEEDLEMAN_WUNSCH_DEBUG */
+#define NEEDLEMAN_WUNSCH_DEBUG
 
 void needleman_wunsch_run(const char*a, unsigned a_len, const char*b, unsigned b_len,
                           char**a_aligned, char**b_aligned, unsigned*aligned_len,
@@ -66,7 +66,7 @@ void needleman_wunsch_run(const char*a, unsigned a_len, const char*b, unsigned b
     i = a_len;
     j = b_len;
 
-    while ((i != 0) && (j != 0)) {
+    while ((i != 0) || (j != 0)) {
         if (mat_get(PTR, b_len + 1, i, j) == DIAG) {
             (*a_aligned)[(*aligned_len)] = a[i - 1];
             (*b_aligned)[(*aligned_len)] = b[j - 1];
@@ -98,6 +98,7 @@ void needleman_wunsch_run(const char*a, unsigned a_len, const char*b, unsigned b
     (*score) = mat_get(D, b_len + 1, a_len, b_len);
 
 #ifdef NEEDLEMAN_WUNSCH_DEBUG
+    printf("%u\n", (*aligned_len));
     printf("a_aligned:\n%.*s\n", (*aligned_len), (*a_aligned));
     printf("b_aligned:\n%.*s\n", (*aligned_len), (*b_aligned));
     printf("score: %d\n", (*score));
