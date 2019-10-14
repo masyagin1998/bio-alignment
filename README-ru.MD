@@ -1,5 +1,5 @@
-# needleman-wunsch
-Реализация алгоритма биоинформатики Нидлмана-Вунша для сравнения биологических последовательностей.
+# bio-alignment
+Реализация алгоритмов биоинформатики Нидлмана-Вунша, Смита-Ватермана и Хиршберга для сравнения биологических последовательностей.
 
 ### Технологии
 
@@ -7,18 +7,14 @@
 
 ### Установка
 
-Для `needleman-wunsch` требуется только `C89`-совместимый компилятор и утилита` make`.
+Для `bio-alignment` требуется только `C89`-совместимый компилятор и утилита` make`.
 
 ```sh
-$ cd needleman-wunsch
+$ cd bio-alignment
 $ make
-$ ./bin/nw --help
-$ ./bin/nw -i data/in.fasta -o out.fasta -s blosum62 -g -5
+$ ./bin/bio-alignment --help
+$ ./bin/bio-alignment -i data/in.fasta -o out.fasta -s blosum62 -g -5
 ```
-
-### Краткое описание
-
-Алгоритм «needleman-wunsch» - это алгоритм, используемый в биоинформатике для выравнивания белковых или нуклеотидных последовательностей с использованием «динамического программирования».
 
 ### Тесты
 
@@ -26,10 +22,10 @@ $ ./bin/nw -i data/in.fasta -o out.fasta -s blosum62 -g -5
 
 Тест `in.fasta` может быть запущен следующим образом:
 ```sh
-$ ./bin/nw -i data/in.fasta
+$ ./bin/bio-alignment -i data/in.fasta
 ```
 
 Тест `in1.fasta`, `in2.fasta` может быть запущен следующим образом:
 ```sh
-$ ./bin/nw -i data/in1.fasta,data/in2.fasta
+$ ./bin/bio-alignment -i data/in1.fasta,data/in2.fasta
 ```
