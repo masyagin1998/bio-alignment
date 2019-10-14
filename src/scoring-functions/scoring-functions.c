@@ -1,4 +1,4 @@
-#include "needleman-wunsch.h"
+#include "scoring-functions.h"
 
 #include <stdio.h>
 #include <stdlib.h>

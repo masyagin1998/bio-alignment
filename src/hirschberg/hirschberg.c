@@ -1,4 +1,4 @@
-#include "needleman-wunsch.h"
+#include "hirschberg.h"
 
 #include "utils.h"
 
@@ -9,11 +9,11 @@
 #define UP   2
 #define DIAG 3
 
-/* #define NEEDLEMAN_WUNSCH_DEBUG */
+#define HIRSCHBERG_DEBUG
 
-void needleman_wunsch_run(const char*a, unsigned a_len, const char*b, unsigned b_len,
-                          char**a_aligned, char**b_aligned, unsigned*aligned_len,
-                          int*score, int (*scoring_function)(char a, char b), int G)
+void hirschberg_run(const char*a, unsigned a_len, const char*b, unsigned b_len,
+                        char**a_aligned, char**b_aligned, unsigned*aligned_len,
+                        int*score, int (*scoring_function)(char a, char b), int G)
 {
     unsigned i, j;
     int*D,*PTR;
@@ -51,7 +51,7 @@ void needleman_wunsch_run(const char*a, unsigned a_len, const char*b, unsigned b
         }
     }
 
-#ifdef NEEDLEMAN_WUNSCH_DEBUG
+#ifdef HIRSCHBERG_DEBUG
     printf("D:\n");
     mat_debug(D, a_len + 1, b_len + 1);
     printf("PTR:\n");
@@ -97,7 +97,7 @@ void needleman_wunsch_run(const char*a, unsigned a_len, const char*b, unsigned b
 
     (*score) = mat_get(D, b_len + 1, a_len, b_len);
 
-#ifdef NEEDLEMAN_WUNSCH_DEBUG
+#ifdef HIRSCHBERG_DEBUG
     printf("a_aligned:\n%.*s\n", (*aligned_len), (*a_aligned));
     printf("b_aligned:\n%.*s\n", (*aligned_len), (*b_aligned));
     printf("score: %d\n", (*score));

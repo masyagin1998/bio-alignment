@@ -1,5 +1,8 @@
 #include "fasta.h"
 #include "needleman-wunsch.h"
+#include "smith-waterman.h"
+#include "hirschberg.h"
+#include "scoring-functions.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,6 +14,10 @@
 #define SCORING_DEFAULT  "default"
 #define SCORING_BLOSUM62 "blosum62"
 #define SCORING_DNAFULL  "dnafull"
+
+#define ALGO_NEEDLEMAN_WUNSCH "nw"
+#define ALGO_SMITH_WATERMAN   "sw"
+#define ALGO_HIRSCHBERG       "hirsch"
 
 static void print_version(const char*program_name)
 {
@@ -34,8 +41,14 @@ static void print_help(const char*program_name)
     fprintf(stderr, "            One or two input files, separated by commas.\n");
     fprintf(stderr, "  --out     (-o)=<file>\n");
     fprintf(stderr, "            Output file (default: stdout).\n");
+    fprintf(stderr, "  --algo    (-a)=<nw|sw|hirsch>\n");
+    fprintf(stderr, "            Algorithm for processing sequences\n");
+    fprintf(stderr, "            (nw - Needleman-Wunsch)\n");
+    fprintf(stderr, "            (sw - Smith-Waterman)\n");
+    fprintf(stderr, "            (h - Hirschberg)\n");
+    fprintf(stderr, "            (default: nw)\n");
     fprintf(stderr, "  --gap     (-g)=<int>\n");
-    fprintf(stderr, "            Gap score (default: -2).");
+    fprintf(stderr, "            Gap score (default: -2).\n");
     fprintf(stderr, "  --scoring (-s)=<blosum62|dnafull|default>\n");
     fprintf(stderr, "            Default: +1 for match, -1 for mismatch.\n");
     exit(0);
@@ -44,6 +57,7 @@ static void print_help(const char*program_name)
 char in_0[MAX_STR] = "";
 char in_1[MAX_STR] = "";
 char out[MAX_STR] = "stdout";
+char algo[MAX_STR] = "nw";
 int  gap = -2;
 char scoring[MAX_STR] = "default";
 
@@ -54,6 +68,7 @@ int parse_args(int argc, char**argv)
         {"help",    0, 0, 'h'},
         {"in",      1, 0, 'i'},
         {"out",     1, 0, 'o'},
+        {"algo",    1, 0, 'a'},
         {"gap",     1, 0, 'g'},
         {"scoring", 1, 0, 's'},
         {0,0,0,0}
@@ -61,7 +76,7 @@ int parse_args(int argc, char**argv)
 
     int c;
     int idx;
-    while ((c = getopt_long(argc, argv, "i:o:g:s:vh", opts, &idx)) != -1) {
+    while ((c = getopt_long(argc, argv, "i:o:a:g:s:vh", opts, &idx)) != -1) {
         switch (c) {
         case 'v':
             print_version(argv[0]);
@@ -89,6 +104,9 @@ int parse_args(int argc, char**argv)
         case 'o':
             strncpy(out, optarg, sizeof(out));
             break;
+        case 'a':
+            strncpy(algo, optarg, sizeof(algo));
+            break;
         case 'g':
             gap = atoi(optarg);
             break;
@@ -113,6 +131,11 @@ int main(int argc, char**argv)
     struct FASTA_DATA*fdata_in_1 = NULL;
     unsigned fdata_in_1_len;
 
+    int (*scoring_function)(char a, char b);
+    void (*algo_run)(const char*a, unsigned a_len, const char*b, unsigned b_len,
+                     char**a_aligned, char**b_aligned, unsigned*aligned_len,
+                     int*score, int (*scoring_function)(char a, char b), int G);
+    
     char*a_aligned;
     char*b_aligned;
     unsigned aligned_len;
@@ -157,24 +180,31 @@ int main(int argc, char**argv)
     }
 
     if (strcmp(scoring, SCORING_DEFAULT) == 0) {
-        needleman_wunsch_run(fdata_in_0->data, fdata_in_0->data_len,
-                             fdata_in_1->data, fdata_in_1->data_len,
-                             &a_aligned, &b_aligned, &aligned_len,
-                             &score, scoring_function_default, gap);
+        scoring_function = &scoring_function_default;
     } else if (strcmp(scoring, SCORING_BLOSUM62) == 0) {
-        needleman_wunsch_run(fdata_in_0->data, fdata_in_0->data_len,
-                             fdata_in_1->data, fdata_in_1->data_len,
-                             &a_aligned, &b_aligned, &aligned_len,
-                             &score, scoring_function_amino_acids_blosum62, gap);
+        scoring_function = &scoring_function_amino_acids_blosum62;
     } else if (strcmp(scoring, SCORING_DNAFULL) == 0) {
-        needleman_wunsch_run(fdata_in_0->data, fdata_in_0->data_len,
-                             fdata_in_1->data, fdata_in_1->data_len,
-                             &a_aligned, &b_aligned, &aligned_len,
-                             &score, scoring_function_nucleotides_dna_full, gap);
+        scoring_function = &scoring_function_nucleotides_dna_full;
     } else {
         fprintf(stderr, "Invalid scoring function \"%s\"!\n", scoring);
-        exit(1);
+        exit(1);        
     }
+
+    if (strcmp(algo, ALGO_NEEDLEMAN_WUNSCH) == 0) {
+        algo_run = &needleman_wunsch_run;
+    } else if (strcmp(algo, ALGO_SMITH_WATERMAN) == 0) {
+        algo_run = &smith_waterman_run;
+    } else if (strcmp(algo, ALGO_HIRSCHBERG) == 0) {
+        algo_run = &hirschberg_run;
+    } else {
+        fprintf(stderr, "Invalid algorithm function \"%s\"!\n", algo);
+        exit(1);        
+    }
+
+    algo_run(fdata_in_0->data, fdata_in_0->data_len,
+             fdata_in_1->data, fdata_in_1->data_len,
+             &a_aligned, &b_aligned, &aligned_len,
+             &score, scoring_function, gap);
 
     if ((in_0[0] != '\0') && (in_1[0] != '\0')) {
         fasta_data_free(fdata_in_0);
