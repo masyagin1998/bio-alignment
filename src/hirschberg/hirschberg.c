@@ -208,6 +208,8 @@ void hirschberg_run(const char*a, unsigned a_len, const char*b, unsigned b_len,
                     char**a_aligned, char**b_aligned, unsigned*aligned_len,
                     int*score, int (*scoring_function)(char a, char b), int G)
 {
+	unsigned i;
+	
 	/* because of const pointer qualifiers. */
     char a1[a_len];
     char b1[b_len];
@@ -215,4 +217,13 @@ void hirschberg_run(const char*a, unsigned a_len, const char*b, unsigned b_len,
     memcpy(b1, b, b_len * sizeof(char));
 
     hirschberg_run_inner(a1, a_len, b1, b_len, a_aligned, b_aligned, aligned_len, score, scoring_function, G);
+
+	(*score) = 0;
+	for (i = 0; i < (*aligned_len); i++) {
+		if (((*a_aligned)[i] == '-') || ((*b_aligned)[i] == '-')) {
+			(*score) += G;
+		} else {
+			(*score) += scoring_function((*a_aligned)[i], (*b_aligned)[i]);
+		}
+	}
 }
