@@ -17,7 +17,7 @@
 
 #define ALGO_NEEDLEMAN_WUNSCH "nw"
 #define ALGO_SMITH_WATERMAN   "sw"
-#define ALGO_HIRSCHBERG       "hirsch"
+#define ALGO_HIRSCHBERG       "hb"
 
 static void print_version(const char*program_name)
 {
@@ -41,11 +41,11 @@ static void print_help(const char*program_name)
     fprintf(stderr, "            One or two input files, separated by commas.\n");
     fprintf(stderr, "  --out     (-o)=<file>\n");
     fprintf(stderr, "            Output file (default: stdout).\n");
-    fprintf(stderr, "  --algo    (-a)=<nw|sw|hirsch>\n");
+    fprintf(stderr, "  --algo    (-a)=<nw|sw|hb>\n");
     fprintf(stderr, "            Algorithm for processing sequences\n");
     fprintf(stderr, "            (nw - Needleman-Wunsch)\n");
     fprintf(stderr, "            (sw - Smith-Waterman)\n");
-    fprintf(stderr, "            (h - Hirschberg)\n");
+    fprintf(stderr, "            (hb - Hirschberg)\n");
     fprintf(stderr, "            (default: nw)\n");
     fprintf(stderr, "  --gap     (-g)=<int>\n");
     fprintf(stderr, "            Gap score (default: -2).\n");

@@ -116,7 +116,7 @@ static int idx_dna_full(char a)
     case 'C':
         return 3;
     default:
-        fprintf(stderr, "unknown character for DNA_FULL: %c", a);
+        fprintf(stderr, "unknown character for DNA_FULL: %c\n", a);
         exit(1);
     }
 }

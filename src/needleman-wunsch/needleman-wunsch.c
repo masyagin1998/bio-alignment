@@ -9,7 +9,7 @@
 #define UP   2
 #define DIAG 3
 
-#define NEEDLEMAN_WUNSCH_DEBUG
+/* #define NEEDLEMAN_WUNSCH_DEBUG */
 
 void needleman_wunsch_run(const char*a, unsigned a_len, const char*b, unsigned b_len,
                           char**a_aligned, char**b_aligned, unsigned*aligned_len,
