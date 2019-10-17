@@ -101,6 +101,7 @@ void hirschberg_run_inner(char*a, unsigned a_len, char*b, unsigned b_len,
     print_arr_char(b, b_len);    
 #endif  /* HIRSCHBERG_DEBUG */
 
+	/* If one of sequences is empty, fill it with spaces ('-'). */
     if (a_len == 0) {
         (*aligned_len) = 0;
         (*a_aligned) = (char*) malloc((a_len + b_len) * sizeof(char));
@@ -122,8 +123,10 @@ void hirschberg_run_inner(char*a, unsigned a_len, char*b, unsigned b_len,
             (*aligned_len)++;
         }
     } else if ((a_len == 1) || (b_len == 1)) {
+		/* Always only one column, so memory is still linear. */
         needleman_wunsch_run(a, a_len, b, b_len, a_aligned, b_aligned, aligned_len, score, scoring_function, G);
     } else {
+		/* Divide-and-conquer part of algorithm. */
 		int*score1;
         unsigned score1_len;
         int*score2;
@@ -142,7 +145,8 @@ void hirschberg_run_inner(char*a, unsigned a_len, char*b, unsigned b_len,
         (*aligned_len) = 0;
         (*a_aligned) = (char*) malloc((a_len + b_len) * sizeof(char));
         (*b_aligned) = (char*) malloc((a_len + b_len) * sizeof(char));
-        
+
+		/* Calculating row scores. */
         calculate_score(a, a_len / 2, b, b_len, &score1, &score1_len, scoring_function, G);
 
         reverse_arr_char(a + a_len / 2, a_len - a_len / 2);
