@@ -10,7 +10,7 @@
 #define UP   2
 #define DIAG 3
 
-#define AFFINE_DEBUG
+/* #define AFFINE_DEBUG */
 
 #define MIN -1000000
 
@@ -27,6 +27,7 @@ void affine_run(const char*a, unsigned a_len, const char*b, unsigned b_len,
     V = (int*) calloc((a_len + 1) * (b_len + 1), sizeof(int));
     PTR = (int*) calloc((a_len + 1) * (b_len + 1), sizeof(int));
 
+    /* initialization of matrix. */
     for (i = 0; i < a_len + 1; i++) {
         mat_set(G, b_len + 1, i, 0, gap + ((i > 0) ? (i - 1) : 0) * gap_serial);
         mat_set(V, b_len + 1, i, 0, mat_get(G, b_len + 1, i, 0));
@@ -43,6 +44,7 @@ void affine_run(const char*a, unsigned a_len, const char*b, unsigned b_len,
     mat_set(V, b_len + 1, 0, 0, 0);
     mat_set(PTR, b_len + 1, 0, 0, DONE);
 
+    /* dynamic programming step. */
     for (i = 1; i < a_len + 1; i++) {
         for (j = 1; j < b_len + 1; j++) {
             int tmp;
