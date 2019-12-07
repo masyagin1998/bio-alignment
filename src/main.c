@@ -2,6 +2,7 @@
 #include "needleman-wunsch.h"
 #include "smith-waterman.h"
 #include "hirschberg.h"
+#include "affine.h"
 #include "scoring-functions.h"
 
 #include <stdlib.h>
@@ -18,6 +19,7 @@
 #define ALGO_NEEDLEMAN_WUNSCH "nw"
 #define ALGO_SMITH_WATERMAN   "sw"
 #define ALGO_HIRSCHBERG       "hb"
+#define ALGO_AFFINE_GAP       "af"
 
 static void print_version(const char*program_name)
 {
@@ -46,11 +48,14 @@ static void print_help(const char*program_name)
     fprintf(stderr, "            (nw - Needleman-Wunsch)\n");
     fprintf(stderr, "            (sw - Smith-Waterman)\n");
     fprintf(stderr, "            (hb - Hirschberg)\n");
+    fprintf(stderr, "            (af - Affine gap)\n");    
     fprintf(stderr, "            (default: nw)\n");
     fprintf(stderr, "  --gap     (-g)=<int>\n");
     fprintf(stderr, "            Gap score (default: -2).\n");
     fprintf(stderr, "  --scoring (-s)=<blosum62|dnafull|default>\n");
     fprintf(stderr, "            Default: +1 for match, -1 for mismatch.\n");
+    fprintf(stderr, "  --gap_serial  =<int>\n");
+    fprintf(stderr, "            Default: 0.\n");    
     exit(0);
 }
 
@@ -60,17 +65,19 @@ char out[MAX_STR] = "stdout";
 char algo[MAX_STR] = "nw";
 int  gap = -2;
 char scoring[MAX_STR] = "default";
+int gap_serial = 0;
 
 int parse_args(int argc, char**argv)
 {
     struct option opts[] = {
-        {"version", 0, 0, 'v'},
-        {"help",    0, 0, 'h'},
-        {"in",      1, 0, 'i'},
-        {"out",     1, 0, 'o'},
-        {"algo",    1, 0, 'a'},
-        {"gap",     1, 0, 'g'},
-        {"scoring", 1, 0, 's'},
+        {"version",    0, 0, 'v'},
+        {"help",       0, 0, 'h'},
+        {"in",         1, 0, 'i'},
+        {"out",        1, 0, 'o'},
+        {"algo",       1, 0, 'a'},
+        {"gap",        1, 0, 'g'},
+        {"scoring",    1, 0, 's'},
+        {"gap_serial", 1, 0, 0},
         {0,0,0,0}
     };
 
@@ -113,6 +120,10 @@ int parse_args(int argc, char**argv)
         case 's':
             strncpy(scoring, optarg, sizeof(scoring));
             break;
+        case 0:
+            if (strcmp("gap_serial", opts[idx].name) == 0) {
+                gap_serial = atoi(optarg);
+            }
         default:
             /* do nothing. */
             break;
@@ -190,21 +201,28 @@ int main(int argc, char**argv)
         exit(1);        
     }
 
-    if (strcmp(algo, ALGO_NEEDLEMAN_WUNSCH) == 0) {
-        algo_run = &needleman_wunsch_run;
-    } else if (strcmp(algo, ALGO_SMITH_WATERMAN) == 0) {
-        algo_run = &smith_waterman_run;
-    } else if (strcmp(algo, ALGO_HIRSCHBERG) == 0) {
-        algo_run = &hirschberg_run;
+    if (strcmp(algo, ALGO_AFFINE_GAP) != 0) {
+        if (strcmp(algo, ALGO_NEEDLEMAN_WUNSCH) == 0) {
+            algo_run = &needleman_wunsch_run;
+        } else if (strcmp(algo, ALGO_SMITH_WATERMAN) == 0) {
+            algo_run = &smith_waterman_run;
+        } else if (strcmp(algo, ALGO_HIRSCHBERG) == 0) {
+            algo_run = &hirschberg_run;
+        } else {
+            fprintf(stderr, "Invalid algorithm function \"%s\"!\n", algo);
+            exit(1);        
+        }
+        
+        algo_run(fdata_in_0->data, fdata_in_0->data_len,
+                 fdata_in_1->data, fdata_in_1->data_len,
+                 &a_aligned, &b_aligned, &aligned_len,
+                 &score, scoring_function, gap);
     } else {
-        fprintf(stderr, "Invalid algorithm function \"%s\"!\n", algo);
-        exit(1);        
+        affine_run(fdata_in_0->data, fdata_in_0->data_len,
+                   fdata_in_1->data, fdata_in_1->data_len,
+                   &a_aligned, &b_aligned, &aligned_len,
+                   &score, scoring_function, gap, gap_serial);
     }
-
-    algo_run(fdata_in_0->data, fdata_in_0->data_len,
-             fdata_in_1->data, fdata_in_1->data_len,
-             &a_aligned, &b_aligned, &aligned_len,
-             &score, scoring_function, gap);
 
     if ((in_0[0] != '\0') && (in_1[0] != '\0')) {
         fasta_data_free(fdata_in_0);
@@ -214,7 +232,7 @@ int main(int argc, char**argv)
             fasta_data_clear(fdata_in_0 + i);
         }
         free(fdata_in_0);
-    }
+    }    
 
     fdata_out = (struct FASTA_DATA*) malloc(sizeof(struct FASTA_DATA) * 2);
     fasta_data_conf(fdata_out,     "", 0, a_aligned, aligned_len);
